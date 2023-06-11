@@ -1,9 +1,8 @@
-from flask import Flask, Response, request
+from flask import Flask, Response
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 import json
-import openai
 
 app = Flask(__name__)
 
@@ -13,8 +12,6 @@ def load_data():
     
     df = pd.DataFrame(data)
     return df
-
-openai.api_key = "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"
 
 @app.route('/get_pie', methods=['GET'])
 def get_pie_chart():
@@ -48,31 +45,5 @@ def get_bar_chart():
 
     return Response(svg_string, mimetype='image/svg+xml')
 
-@app.route('/answer_question', methods=['POST'])
-def answer_question():
-    question = request.get_json().get('question')
-
-    df = load_data()
-
-    # Convert the dataframe to a list of dictionaries
-    data = df.to_dict('records')
-
-    # Use the OpenAI API to generate an answer
-    response = openai.Completion.create(
-        engine='text-davinci-003',
-        prompt=f"De data toont dit aan {data}. De vraag is: {question}\n Antwoord in het nederlands en vermeld enkel het antwoord",
-        max_tokens=300,
-        n=1,
-        stop=None,
-        temperature=0.7,
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0,
-    )
-
-    answer = response.choices[0].text.strip() # type: ignore
-
-    return {'answer': answer}
-
 if __name__ == '__main__':
-    app.run(port=int("3000"), debug=True)
+    app.run(debug=True)
